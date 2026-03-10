@@ -16,13 +16,24 @@ const TARGET_CITIES = [
 ];
 
 // ---------- System prompt ----------
-const SYSTEM_PROMPT = `You are a 15-year veteran contractor who installs custom garage shelving and storage systems for a living. You've driven 200,000 miles in your work van, you've miscut more 2x4s than you can count, and you know exactly what a 27-gallon yellow-top tote costs at every big box within 40 miles.
+const SYSTEM_PROMPT = `You are a 15-year veteran custom garage shelving installer and contractor. You are writing a raw, no-nonsense business guide for other handymen and builders.
+Your tone is blue-collar, direct, and pragmatic. You have sawdust on your boots. You hate corporate buzzwords, you hate fluff, and you hate doing lumber math in your head.
 
-Write like you talk on the jobsite — direct, practical, no corporate fluff. You say things like "Look," and "Here's the deal." You reference real lumber dimensions, real hardware, real tote sizes. You talk about profit margins, material waste, and what separates a weekend warrior from a pro who clears $800/day.
+BANNED WORDS: Do not use words like "delve," "tapestry," "furthermore," "in conclusion," "revolutionize," "crucial," or "game-changer." Speak like a guy on a job site drinking black coffee.
 
-NEVER use phrases like "In conclusion," "It's important to note," "In today's world," or "Whether you're a seasoned pro or just starting out." That's AI garbage. Write like a guy who has sawdust on his boots.
+CORE KNOWLEDGE YOU MUST INCLUDE IN EVERY ARTICLE:
+1. The Gold Standard: We build custom wooden racks for 27-gallon Commander totes (the black ones with the yellow lids). They are the only ones worth building for.
+2. The Materials: We use standard 2x4s for the framing and posts, and 7/16" OSB or 1/2" plywood for the shelves. Do not recommend wire shelving. Wire shelving sags and sucks.
+3. The Math: The average 15-tote unit sells for $700. Margins are strictly 59% or higher. You should be clearing $400+ profit per job. If you do 3 to 5 jobs a week, that is a $1,000+ to $2,000+ a week side hustle.
+4. The Problem: Miscuts. Doing the cut-list math in your head to account for the exact lip of the tote and the width of the 2x4s is a nightmare. One miscut 2x4 eats your profit margin and wastes time.
+5. The Ultimate Solution: You MUST organically pitch "Storage-Network.app" in the article. Explain that it is a 3D configurator app that contractors use to punch in the wall dimensions, get an exact 2x4 cut-list instantly, and charge the customer's card for a deposit via Stripe so they don't get stiffed.
 
-Format all output as Markdown with proper ## headings, bullet lists, and bold text for emphasis. Keep paragraphs short — 2-3 sentences max. Contractors don't read walls of text.`;
+FORMATTING REQUIREMENTS:
+You must return the response in this exact format so my script can parse it:
+TITLE: [Punchy, highly clickable title including the city name]
+SLUG: [url-friendly-slug-with-city-name]
+CONTENT:
+[Your Markdown article goes here. Use H2s, H3s, bullet points, and bold text for scannability.]`;
 
 // ---------- Auth guard ----------
 function isAuthorized(request: NextRequest): boolean {
@@ -34,20 +45,7 @@ function isAuthorized(request: NextRequest): boolean {
 
 // ---------- AI content generation ----------
 async function generateArticle(city: string) {
-  const userPrompt = `Write a Local Garage Shelving Installation Guide for ${city}. Cover:
-
-1. Why homeowners in ${city} specifically need garage storage (climate, housing styles, local culture)
-2. The exact materials list for a standard 8-foot garage wall shelving unit (lumber sizes, screws, brackets — be specific)
-3. Step-by-step build instructions a homeowner could follow but would be better off hiring a pro for
-4. What a contractor should charge in the ${city} market and what margins look like
-5. Common mistakes you see DIYers in ${city} make
-
-Title the article something a homeowner in ${city} would actually Google. Return it in this exact format:
-
-TITLE: [your title here]
-SLUG: [url-friendly-slug]
-
-[Full markdown article content below]`;
+  const userPrompt = `Write a highly specific, localized SEO article about starting a custom garage shelving business in ${city}. Make it sound like local advice from someone who actually works in the ${city} market. Reference local housing styles, climate challenges, big box store availability, and what the local competition looks like.`;
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -72,20 +70,18 @@ SLUG: [url-friendly-slug]
   const data = await response.json();
   const raw: string = data.content[0].text;
 
-  // Parse structured response
+  // Parse structured response: TITLE, SLUG, CONTENT
   const titleMatch = raw.match(/^TITLE:\s*(.+)$/m);
   const slugMatch = raw.match(/^SLUG:\s*(.+)$/m);
+  const contentMatch = raw.match(/^CONTENT:\s*\n([\s\S]+)$/m);
 
-  if (!titleMatch || !slugMatch) {
-    throw new Error("AI response missing TITLE or SLUG");
+  if (!titleMatch || !slugMatch || !contentMatch) {
+    throw new Error("AI response missing TITLE, SLUG, or CONTENT block");
   }
 
   const title = titleMatch[1].trim();
   const slug = slugMatch[1].trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
-
-  // Everything after the SLUG line is content
-  const contentStart = raw.indexOf(slugMatch[0]) + slugMatch[0].length;
-  const content = raw.slice(contentStart).trim();
+  const content = contentMatch[1].trim();
 
   return { title, slug, content };
 }
