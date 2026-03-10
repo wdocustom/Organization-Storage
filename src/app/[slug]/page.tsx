@@ -95,7 +95,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 }
 
 function markdownToHtml(md: string): string {
-  let html = md
+  const html = md
     // Headings
     .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
     .replace(/^### (.+)$/gm, "<h3>$1</h3>")
