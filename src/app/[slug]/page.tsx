@@ -2,7 +2,10 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import CTABlock from "@/components/CTABlock";
 import ArticleJsonLd from "@/components/ArticleJsonLd";
+import BreadcrumbJsonLd from "@/components/BreadcrumbJsonLd";
+import RelatedArticles from "@/components/RelatedArticles";
 import { SITE_URL } from "@/lib/constants";
+import { cityToSlug } from "@/lib/cities";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
@@ -72,6 +75,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   const { firstHalf, secondHalf } = splitContentWithCTA(article.content);
 
+  const breadcrumbs = [
+    { name: "Home", href: "/" },
+    ...(article.target_city
+      ? [{ name: article.target_city, href: `/city/${cityToSlug(article.target_city)}` }]
+      : []),
+    { name: article.title },
+  ];
+
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
       <ArticleJsonLd
@@ -84,6 +95,31 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             : article.title
         }
       />
+      <BreadcrumbJsonLd items={breadcrumbs} />
+
+      <nav aria-label="Breadcrumb" className="mb-6 text-sm text-slate-500">
+        <ol className="flex flex-wrap items-center gap-1">
+          <li>
+            <a href="/" className="hover:text-safety-orange">Home</a>
+          </li>
+          {article.target_city && (
+            <>
+              <li><span className="mx-1">/</span></li>
+              <li>
+                <a
+                  href={`/city/${cityToSlug(article.target_city)}`}
+                  className="hover:text-safety-orange"
+                >
+                  {article.target_city}
+                </a>
+              </li>
+            </>
+          )}
+          <li><span className="mx-1">/</span></li>
+          <li className="truncate text-slate-400">{article.title}</li>
+        </ol>
+      </nav>
+
       {article.target_city && (
         <span className="mb-3 inline-block rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-medium uppercase tracking-wider text-safety-orange">
           {article.target_city}
@@ -118,6 +154,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       </div>
 
       <CTABlock category={article.category} />
+
+      <RelatedArticles
+        currentSlug={article.slug}
+        category={article.category}
+        targetCity={article.target_city}
+      />
     </article>
   );
 }

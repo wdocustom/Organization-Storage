@@ -1,47 +1,9 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import ArticleCard from "@/components/ArticleCard";
+import { TARGET_CITIES, cityToSlug } from "@/lib/cities";
 
 export const revalidate = 3600;
-
-function ArticleCard({
-  article,
-}: {
-  article: {
-    slug: string;
-    title: string;
-    category: string;
-    target_city: string | null;
-    published_at: string;
-  };
-}) {
-  return (
-    <Link
-      href={`/${article.slug}`}
-      className="group rounded-lg border border-slate-800 bg-slate-900/50 p-6 transition-all hover:border-slate-700 hover:bg-slate-900"
-    >
-      <div className="mb-3 flex items-center gap-2">
-        <span className="rounded bg-slate-800 px-2 py-0.5 text-xs font-medium uppercase text-slate-400">
-          {article.category}
-        </span>
-        {article.target_city && (
-          <span className="rounded bg-slate-800 px-2 py-0.5 text-xs font-medium text-safety-orange">
-            {article.target_city}
-          </span>
-        )}
-      </div>
-      <h3 className="mb-2 text-lg font-bold text-white transition-colors group-hover:text-safety-orange">
-        {article.title}
-      </h3>
-      <time className="text-sm text-slate-600">
-        {new Date(article.published_at).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })}
-      </time>
-    </Link>
-  );
-}
 
 function EmptyState({ message }: { message: string }) {
   return (
@@ -135,6 +97,29 @@ export default async function HomePage() {
         ) : (
           <EmptyState message="Installer guides coming soon." />
         )}
+      </section>
+
+      {/* City Pages */}
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+        <div className="mb-10 border-t border-slate-800 pt-16">
+          <h2 className="mb-2 text-2xl font-black text-white sm:text-3xl">
+            Browse by City
+          </h2>
+          <p className="text-slate-500">
+            Custom garage storage guides for your area.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {TARGET_CITIES.map((city) => (
+            <Link
+              key={city}
+              href={`/city/${cityToSlug(city)}`}
+              className="rounded-lg border border-slate-800 bg-slate-900/50 px-4 py-3 text-center text-sm font-medium text-white transition-all hover:border-slate-700 hover:text-safety-orange"
+            >
+              {city}
+            </Link>
+          ))}
+        </div>
       </section>
     </>
   );

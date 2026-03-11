@@ -2,19 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { TOTE, TOTE_BRANDS, EXAMPLE_15_TOTE } from "@/lib/build-specs";
 
-// ---------- City rotation ----------
-const TARGET_CITIES = [
-  "Houston, TX",
-  "Phoenix, AZ",
-  "Nashville, TN",
-  "Denver, CO",
-  "Charlotte, NC",
-  "Columbus, OH",
-  "Indianapolis, IN",
-  "San Antonio, TX",
-  "Jacksonville, FL",
-  "Oklahoma City, OK",
-];
+import { TARGET_CITIES } from "@/lib/cities";
 
 // ---------- Topic rotation per city ----------
 const TOPICS = [
