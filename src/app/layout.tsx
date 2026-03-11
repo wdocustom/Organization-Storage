@@ -19,6 +19,22 @@ export const metadata: Metadata = {
   title: "Storage Network — Custom Shelving & Storage Solutions",
   description:
     "Auto-generate cut-lists, 3D models, and material estimates for custom shelving installations. The #1 tool for storage builders and installers.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://www.organization-storage.com"
+  ),
+  openGraph: {
+    title: "Storage Network — Custom Shelving & Storage Solutions",
+    description:
+      "Auto-generate cut-lists, 3D models, and material estimates for custom shelving installations.",
+    siteName: "Storage Network",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Storage Network — Custom Shelving & Storage Solutions",
+    description:
+      "Auto-generate cut-lists, 3D models, and material estimates for custom shelving installations.",
+  },
 };
 
 export default function RootLayout({

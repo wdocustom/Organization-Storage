@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import CTABlock from "@/components/CTABlock";
+import ArticleJsonLd from "@/components/ArticleJsonLd";
+import { SITE_URL } from "@/lib/constants";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
@@ -14,7 +16,7 @@ export async function generateMetadata({
 }: ArticlePageProps): Promise<Metadata> {
   const { data: article } = await supabase
     .from("articles")
-    .select("title, category, target_city")
+    .select("title, category, target_city, published_at, content")
     .eq("slug", params.slug)
     .single();
 
@@ -24,9 +26,25 @@ export async function generateMetadata({
     ? `${article.title} — Custom storage solutions in ${article.target_city}.`
     : article.title;
 
+  const url = `${SITE_URL}/${params.slug}`;
+
   return {
     title: `${article.title} | Storage Network`,
     description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: article.title,
+      description,
+      url,
+      siteName: "Storage Network",
+      type: "article",
+      publishedTime: article.published_at,
+    },
+    twitter: {
+      card: "summary",
+      title: article.title,
+      description,
+    },
   };
 }
 
@@ -56,6 +74,16 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <ArticleJsonLd
+        title={article.title}
+        slug={article.slug}
+        publishedAt={article.published_at}
+        description={
+          article.target_city
+            ? `${article.title} — Custom storage solutions in ${article.target_city}.`
+            : article.title
+        }
+      />
       {article.target_city && (
         <span className="mb-3 inline-block rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-medium uppercase tracking-wider text-safety-orange">
           {article.target_city}
