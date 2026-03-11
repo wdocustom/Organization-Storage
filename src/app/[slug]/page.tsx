@@ -111,13 +111,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <div dangerouslySetInnerHTML={{ __html: markdownToHtml(firstHalf) }} />
       </div>
 
-      <CTABlock />
+      <CTABlock category={article.category} />
 
       <div className="prose prose-slate prose-invert max-w-none prose-headings:text-white prose-a:text-safety-orange prose-a:no-underline hover:prose-a:text-safety-yellow prose-strong:text-white prose-code:text-safety-yellow">
         <div dangerouslySetInnerHTML={{ __html: markdownToHtml(secondHalf) }} />
       </div>
 
-      <CTABlock />
+      <CTABlock category={article.category} />
     </article>
   );
 }
