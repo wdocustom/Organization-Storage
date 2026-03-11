@@ -58,10 +58,20 @@ CONTENT:
 
 // ---------- Auth guard ----------
 function isAuthorized(request: NextRequest): boolean {
+  // Support both Authorization header (Vercel cron) and query param (manual testing)
   const authHeader = request.headers.get("authorization");
-  if (!authHeader) return false;
-  const token = authHeader.replace("Bearer ", "");
-  return token === process.env.CRON_SECRET;
+  const querySecret = request.nextUrl.searchParams.get("secret");
+
+  if (authHeader) {
+    const token = authHeader.replace("Bearer ", "");
+    return token === process.env.CRON_SECRET;
+  }
+
+  if (querySecret) {
+    return querySecret === process.env.CRON_SECRET;
+  }
+
+  return false;
 }
 
 // ---------- AI content generation ----------
@@ -127,14 +137,20 @@ async function pickCity(): Promise<string | null> {
 
 // ---------- Route handler ----------
 export async function GET(request: NextRequest) {
+  console.log("[cron/generate] Hit — checking auth...");
+
   // Auth check
   if (!isAuthorized(request)) {
+    console.log("[cron/generate] Auth FAILED — no valid secret found");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  console.log("[cron/generate] Auth OK");
 
   try {
     // Pick a city that hasn't been covered yet
     const city = await pickCity();
+    console.log("[cron/generate] Next city:", city ?? "ALL COVERED");
 
     if (!city) {
       return NextResponse.json({
@@ -143,7 +159,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Generate the article
+    console.log("[cron/generate] Generating article for:", city);
     const { title, slug, content } = await generateArticle(city);
+    console.log("[cron/generate] Generated:", { title, slug, contentLen: content.length });
 
     // Insert into Supabase
     const { error } = await supabaseAdmin.from("articles").insert({
@@ -159,6 +177,8 @@ export async function GET(request: NextRequest) {
       throw new Error(`Supabase insert failed: ${error.message}`);
     }
 
+    console.log("[cron/generate] Inserted into Supabase successfully");
+
     return NextResponse.json({
       success: true,
       city,
@@ -167,7 +187,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("Cron generate error:", message);
+    console.error("[cron/generate] ERROR:", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
