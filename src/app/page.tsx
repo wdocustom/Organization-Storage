@@ -14,11 +14,14 @@ function EmptyState({ message }: { message: string }) {
 }
 
 export default async function HomePage() {
-  const { data: articles } = await supabase
-    .from("articles")
-    .select("slug, title, category, target_city, published_at")
-    .order("published_at", { ascending: false })
-    .limit(24);
+  // During build without env vars, skip DB queries
+  const { data: articles } = process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? await supabase
+        .from("articles")
+        .select("slug, title, category, target_city, published_at")
+        .order("published_at", { ascending: false })
+        .limit(24)
+    : { data: null };
 
   const installerGuides = (articles ?? []).filter(
     (a) => a.category === "local-guide"

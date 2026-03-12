@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 import { TOTE, TOTE_BRANDS, EXAMPLE_15_TOTE } from "@/lib/build-specs";
 
@@ -66,16 +67,23 @@ CONTENT:
 [Markdown article. Use ## for sections, bold for emphasis, bullet points where they make sense. Keep it 800-1200 words. Not longer.]`;
 
 // ---------- Auth guard ----------
-function isAuthorized(request: NextRequest): boolean {
-  const authHeader = request.headers.get("authorization");
-  const querySecret = request.nextUrl.searchParams.get("secret");
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
+function isAuthorized(request: NextRequest): boolean {
+  const expected = process.env.CRON_SECRET;
+  if (!expected) return false;
+
+  const authHeader = request.headers.get("authorization");
   if (authHeader) {
     const token = authHeader.replace("Bearer ", "");
-    return token === process.env.CRON_SECRET;
+    return safeCompare(token, expected);
   }
+  const querySecret = request.nextUrl.searchParams.get("secret");
   if (querySecret) {
-    return querySecret === process.env.CRON_SECRET;
+    return safeCompare(querySecret, expected);
   }
   return false;
 }

@@ -28,8 +28,11 @@ create policy "Articles are publicly readable"
   on articles for select
   using (true);
 
--- Service role can insert/update/delete (used by backend content pipeline)
+-- Service role can insert/update/delete (used by backend content pipeline).
+-- NOTE: The service_role key bypasses RLS entirely in Supabase, so this policy
+-- primarily prevents non-service-role authenticated users from writing.
+-- The anon key will only match the SELECT policy above.
 create policy "Service role can manage articles"
   on articles for all
-  using (true)
-  with check (true);
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');

@@ -6,10 +6,12 @@ import { TARGET_CITIES, cityToSlug } from "@/lib/cities";
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { data: articles } = await supabase
-    .from("articles")
-    .select("slug, published_at")
-    .order("published_at", { ascending: false });
+  const { data: articles } = process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? await supabase
+        .from("articles")
+        .select("slug, published_at")
+        .order("published_at", { ascending: false })
+    : { data: null };
 
   const articleEntries: MetadataRoute.Sitemap = (articles ?? []).map((a) => ({
     url: `${SITE_URL}/${a.slug}`,

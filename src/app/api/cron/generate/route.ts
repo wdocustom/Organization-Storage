@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
 import { supabaseAdmin } from "@/lib/supabase";
 import {
   TOTE,
@@ -45,18 +46,26 @@ CONTENT:
 [Your Markdown article goes here. Use H2s, H3s, bullet points, and bold text for scannability.]`;
 
 // ---------- Auth guard ----------
-function isAuthorized(request: NextRequest): boolean {
-  // Support both Authorization header (Vercel cron) and query param (manual testing)
-  const authHeader = request.headers.get("authorization");
-  const querySecret = request.nextUrl.searchParams.get("secret");
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
+function isAuthorized(request: NextRequest): boolean {
+  const expected = process.env.CRON_SECRET;
+  if (!expected) return false;
+
+  // Authorization header (Vercel cron)
+  const authHeader = request.headers.get("authorization");
   if (authHeader) {
     const token = authHeader.replace("Bearer ", "");
-    return token === process.env.CRON_SECRET;
+    return safeCompare(token, expected);
   }
 
+  // Query param fallback (manual testing — avoid in production, secret visible in logs)
+  const querySecret = request.nextUrl.searchParams.get("secret");
   if (querySecret) {
-    return querySecret === process.env.CRON_SECRET;
+    return safeCompare(querySecret, expected);
   }
 
   return false;

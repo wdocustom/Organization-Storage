@@ -44,11 +44,13 @@ export default async function CityPage({ params }: CityPageProps) {
   const city = slugToCity(params.city);
   if (!city) notFound();
 
-  const { data: articles } = await supabase
-    .from("articles")
-    .select("slug, title, category, target_city, published_at")
-    .eq("target_city", city)
-    .order("published_at", { ascending: false });
+  const { data: articles } = process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? await supabase
+        .from("articles")
+        .select("slug, title, category, target_city, published_at")
+        .eq("target_city", city)
+        .order("published_at", { ascending: false })
+    : { data: null };
 
   const homeownerGuides = (articles ?? []).filter(
     (a) => a.category === "homeowner-guide"

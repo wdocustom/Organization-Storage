@@ -52,6 +52,8 @@ export async function generateMetadata({
 }
 
 export async function generateStaticParams() {
+  // During build, env vars may not be set — return empty to skip prerendering
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return [];
   const { data: articles } = await supabase.from("articles").select("slug");
   return (articles ?? []).map((a) => ({ slug: a.slug }));
 }
@@ -164,8 +166,19 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   );
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function markdownToHtml(md: string): string {
-  const html = md
+  // Escape raw HTML first to prevent XSS from AI-generated or DB content
+  const escaped = escapeHtml(md);
+
+  const html = escaped
     // Headings
     .replace(/^#### (.+)$/gm, "<h4>$1</h4>")
     .replace(/^### (.+)$/gm, "<h3>$1</h3>")
@@ -177,8 +190,11 @@ function markdownToHtml(md: string): string {
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     // Inline code
     .replace(/`(.+?)`/g, "<code>$1</code>")
-    // Links
-    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>')
+    // Links — only allow http(s) URLs to prevent javascript: injection
+    .replace(
+      /\[(.+?)\]\((https?:\/\/[^\s)]+)\)/g,
+      '<a href="$2" rel="noopener noreferrer">$1</a>'
+    )
     // Unordered lists
     .replace(/^\- (.+)$/gm, "<li>$1</li>")
     // Paragraphs: wrap non-tag lines

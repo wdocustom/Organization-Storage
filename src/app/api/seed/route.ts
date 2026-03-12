@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "crypto";
+
+function safeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
+}
 
 /**
  * Manual seed endpoint — trigger article generation on demand.
@@ -11,8 +17,9 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   const secret = request.nextUrl.searchParams.get("secret");
   const type = request.nextUrl.searchParams.get("type") ?? "installer";
+  const expected = process.env.CRON_SECRET;
 
-  if (!secret || secret !== process.env.CRON_SECRET) {
+  if (!secret || !expected || !safeCompare(secret, expected)) {
     return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
   }
 
