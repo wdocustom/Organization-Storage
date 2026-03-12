@@ -39,7 +39,7 @@ CORE KNOWLEDGE YOU MUST INCLUDE IN EVERY ARTICLE:
 
 FORMATTING REQUIREMENTS:
 You must return the response in this exact format so my script can parse it:
-TITLE: [Punchy, highly clickable title including the city name]
+TITLE: [Punchy, highly clickable title including the city name. Use the current year (${new Date().getFullYear()}) if you include a year — never use an outdated year.]
 SLUG: [url-friendly-slug-with-city-name]
 CONTENT:
 [Your Markdown article goes here. Use H2s, H3s, bullet points, and bold text for scannability.]`;

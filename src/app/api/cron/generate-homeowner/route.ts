@@ -60,7 +60,7 @@ MENTION STORAGE NETWORK:
 
 FORMATTING:
 Return the response in this exact format:
-TITLE: [Short, natural title a homeowner would click on — include the city name]
+TITLE: [Short, natural title a homeowner would click on — include the city name. Use the current year (${new Date().getFullYear()}) if you include a year — never use an outdated year.]
 SLUG: [url-friendly-slug-with-city]
 CONTENT:
 [Markdown article. Use ## for sections, bold for emphasis, bullet points where they make sense. Keep it 800-1200 words. Not longer.]`;

@@ -25,18 +25,19 @@ export async function generateMetadata({
 
   if (!article) return {};
 
+  const title = fixStaleYear(article.title);
   const description = article.target_city
-    ? `${article.title} — Custom storage solutions in ${article.target_city}.`
-    : article.title;
+    ? `${title} — Custom storage solutions in ${article.target_city}.`
+    : title;
 
   const url = `${SITE_URL}/${params.slug}`;
 
   return {
-    title: `${article.title} | Storage Network`,
+    title: `${title} | Storage Network`,
     description,
     alternates: { canonical: url },
     openGraph: {
-      title: article.title,
+      title,
       description,
       url,
       siteName: "Storage Network",
@@ -45,7 +46,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary",
-      title: article.title,
+      title,
       description,
     },
   };
@@ -59,6 +60,12 @@ export async function generateStaticParams() {
 function stripLeadingTitle(content: string): string {
   // Remove the first `# ...` heading if it exists (it duplicates the page <h1>)
   return content.replace(/^#\s+.+\n+/, "");
+}
+
+/** Replace stale years like "(2024 Guide)" with the current year */
+function fixStaleYear(title: string): string {
+  const currentYear = new Date().getFullYear();
+  return title.replace(/\(20[0-9]{2}(\s+Guide)?\)/gi, `(${currentYear}$1)`);
 }
 
 function splitContentWithCTA(content: string) {
@@ -79,6 +86,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   if (!article) notFound();
 
+  const title = fixStaleYear(article.title);
   const { firstHalf, secondHalf } = splitContentWithCTA(article.content);
 
   const breadcrumbs = [
@@ -86,19 +94,19 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     ...(article.target_city
       ? [{ name: article.target_city, href: `/city/${cityToSlug(article.target_city)}` }]
       : []),
-    { name: article.title },
+    { name: title },
   ];
 
   return (
     <>
       <ArticleJsonLd
-        title={article.title}
+        title={title}
         slug={article.slug}
         publishedAt={article.published_at}
         description={
           article.target_city
-            ? `${article.title} — Custom storage solutions in ${article.target_city}.`
-            : article.title
+            ? `${title} — Custom storage solutions in ${article.target_city}.`
+            : title
         }
       />
       <BreadcrumbJsonLd items={breadcrumbs} />
@@ -139,7 +147,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
 
           <h1 className="mb-4 text-3xl font-black leading-tight text-white sm:text-4xl lg:text-5xl">
-            {article.title}
+            {title}
           </h1>
 
           <time className="text-sm text-slate-500">
