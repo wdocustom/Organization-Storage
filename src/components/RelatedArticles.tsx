@@ -4,13 +4,11 @@ import { supabase } from "@/lib/supabase";
 interface RelatedArticlesProps {
   currentSlug: string;
   category: string;
-  targetCity: string | null;
 }
 
 export default async function RelatedArticles({
   currentSlug,
   category,
-  targetCity,
 }: RelatedArticlesProps) {
   // Fetch a mix: prefer different categories to avoid "same title, different city" look
   const { data: mixedArticles } = await supabase

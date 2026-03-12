@@ -177,7 +177,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <RelatedArticles
           currentSlug={article.slug}
           category={article.category}
-          targetCity={article.target_city}
         />
       </article>
     </>
