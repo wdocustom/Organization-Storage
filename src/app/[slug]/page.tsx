@@ -56,8 +56,14 @@ export async function generateStaticParams() {
   return (articles ?? []).map((a) => ({ slug: a.slug }));
 }
 
+function stripLeadingTitle(content: string): string {
+  // Remove the first `# ...` heading if it exists (it duplicates the page <h1>)
+  return content.replace(/^#\s+.+\n+/, "");
+}
+
 function splitContentWithCTA(content: string) {
-  const lines = content.split("\n");
+  const cleaned = stripLeadingTitle(content);
+  const lines = cleaned.split("\n");
   const mid = Math.floor(lines.length / 2);
   const firstHalf = lines.slice(0, mid).join("\n");
   const secondHalf = lines.slice(mid).join("\n");
@@ -84,7 +90,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   ];
 
   return (
-    <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+    <>
       <ArticleJsonLd
         title={article.title}
         slug={article.slug}
@@ -97,70 +103,76 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       />
       <BreadcrumbJsonLd items={breadcrumbs} />
 
-      <nav aria-label="Breadcrumb" className="mb-6 text-sm text-slate-500">
-        <ol className="flex flex-wrap items-center gap-1">
-          <li>
-            <a href="/" className="hover:text-safety-orange">Home</a>
-          </li>
-          {article.target_city && (
-            <>
-              <li><span className="mx-1">/</span></li>
+      {/* Hero header */}
+      <header className="border-b border-slate-800 bg-gradient-to-b from-slate-900 to-black">
+        <div className="mx-auto max-w-3xl px-4 pb-10 pt-8 sm:px-6">
+          <nav aria-label="Breadcrumb" className="mb-8 text-sm text-slate-500">
+            <ol className="flex flex-wrap items-center gap-1">
               <li>
-                <a
-                  href={`/city/${cityToSlug(article.target_city)}`}
-                  className="hover:text-safety-orange"
-                >
-                  {article.target_city}
-                </a>
+                <a href="/" className="transition-colors hover:text-safety-orange">Home</a>
               </li>
-            </>
-          )}
-          <li><span className="mx-1">/</span></li>
-          <li className="truncate text-slate-400">{article.title}</li>
-        </ol>
-      </nav>
+              {article.target_city && (
+                <>
+                  <li><span className="mx-1 text-slate-700">/</span></li>
+                  <li>
+                    <a
+                      href={`/city/${cityToSlug(article.target_city)}`}
+                      className="transition-colors hover:text-safety-orange"
+                    >
+                      {article.target_city}
+                    </a>
+                  </li>
+                </>
+              )}
+            </ol>
+          </nav>
 
-      {article.target_city && (
-        <span className="mb-3 inline-block rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-medium uppercase tracking-wider text-safety-orange">
-          {article.target_city}
-        </span>
-      )}
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-safety-orange/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-safety-orange">
+              {article.category.replace("-", " ")}
+            </span>
+            {article.target_city && (
+              <span className="rounded-full border border-slate-700 px-3 py-1 text-xs font-medium text-slate-400">
+                {article.target_city}
+              </span>
+            )}
+          </div>
 
-      <h1 className="mb-2 text-3xl font-black leading-tight text-white sm:text-4xl lg:text-5xl">
-        {article.title}
-      </h1>
+          <h1 className="mb-4 text-3xl font-black leading-tight text-white sm:text-4xl lg:text-5xl">
+            {article.title}
+          </h1>
 
-      <div className="mb-8 flex items-center gap-3 text-sm text-slate-500">
-        <span className="rounded bg-slate-800 px-2 py-0.5 text-xs font-medium uppercase text-slate-400">
-          {article.category}
-        </span>
-        <time>
-          {new Date(article.published_at).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </time>
-      </div>
+          <time className="text-sm text-slate-500">
+            {new Date(article.published_at).toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            })}
+          </time>
+        </div>
+      </header>
 
-      <div className="prose prose-slate prose-invert max-w-none prose-headings:text-white prose-a:text-safety-orange prose-a:no-underline hover:prose-a:text-safety-yellow prose-strong:text-white prose-code:text-safety-yellow">
-        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(firstHalf) }} />
-      </div>
+      {/* Article body */}
+      <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+        <div className="prose prose-lg prose-slate prose-invert max-w-none prose-headings:font-bold prose-headings:text-white prose-p:leading-relaxed prose-p:text-slate-300 prose-a:text-safety-orange prose-a:no-underline hover:prose-a:text-safety-yellow prose-strong:text-white prose-code:text-safety-yellow prose-li:text-slate-300">
+          <div dangerouslySetInnerHTML={{ __html: markdownToHtml(firstHalf) }} />
+        </div>
 
-      <CTABlock category={article.category} />
+        <CTABlock category={article.category} />
 
-      <div className="prose prose-slate prose-invert max-w-none prose-headings:text-white prose-a:text-safety-orange prose-a:no-underline hover:prose-a:text-safety-yellow prose-strong:text-white prose-code:text-safety-yellow">
-        <div dangerouslySetInnerHTML={{ __html: markdownToHtml(secondHalf) }} />
-      </div>
+        <div className="prose prose-lg prose-slate prose-invert max-w-none prose-headings:font-bold prose-headings:text-white prose-p:leading-relaxed prose-p:text-slate-300 prose-a:text-safety-orange prose-a:no-underline hover:prose-a:text-safety-yellow prose-strong:text-white prose-code:text-safety-yellow prose-li:text-slate-300">
+          <div dangerouslySetInnerHTML={{ __html: markdownToHtml(secondHalf) }} />
+        </div>
 
-      <CTABlock category={article.category} />
+        <CTABlock category={article.category} />
 
-      <RelatedArticles
-        currentSlug={article.slug}
-        category={article.category}
-        targetCity={article.target_city}
-      />
-    </article>
+        <RelatedArticles
+          currentSlug={article.slug}
+          category={article.category}
+          targetCity={article.target_city}
+        />
+      </article>
+    </>
   );
 }
 
