@@ -132,12 +132,13 @@ async function generateArticle(city: string, topicPrompt: string) {
   return { title, slug, content };
 }
 
-// ---------- Pick next city + topic ----------
-async function pickCityAndTopic(): Promise<{
-  city: string;
-  angle: string;
-  prompt: string;
-} | null> {
+// ---------- How many articles to generate per cron invocation ----------
+const BATCH_SIZE = 3;
+
+// ---------- Pick next N city+topic pairs ----------
+async function pickBatch(): Promise<
+  { city: string; angle: string; prompt: string }[]
+> {
   const { data: existing } = await supabaseAdmin
     .from("articles")
     .select("target_city")
@@ -149,16 +150,19 @@ async function pickCityAndTopic(): Promise<{
     countByCity[row.target_city] = (countByCity[row.target_city] || 0) + 1;
   }
 
-  // Find first city that still has topics left
+  const batch: { city: string; angle: string; prompt: string }[] = [];
+
   for (const city of TARGET_CITIES) {
+    if (batch.length >= BATCH_SIZE) break;
     const count = countByCity[city] || 0;
     if (count < TOPICS.length) {
       const topic = TOPICS[count];
-      return { city, angle: topic.angle, prompt: topic.prompt(city) };
+      batch.push({ city, angle: topic.angle, prompt: topic.prompt(city) });
+      countByCity[city] = count + 1; // track within batch
     }
   }
 
-  return null;
+  return batch;
 }
 
 // ---------- Route handler ----------
@@ -174,41 +178,41 @@ export async function GET(request: NextRequest) {
   console.log("[cron/generate] Auth OK");
 
   try {
-    const next = await pickCityAndTopic();
-    console.log("[cron/generate] Next:", next?.city ?? "ALL COVERED", next?.angle);
+    const batch = await pickBatch();
+    console.log("[cron/generate] Batch size:", batch.length);
 
-    if (!next) {
+    if (batch.length === 0) {
       return NextResponse.json({
         message: "All target cities and topics have been covered.",
       });
     }
 
-    console.log("[cron/generate] Generating for:", next.city, next.angle);
-    const { title, slug, content } = await generateArticle(next.city, next.prompt);
-    console.log("[cron/generate] Generated:", { title, slug, contentLen: content.length });
+    const results: { city: string; angle: string; title: string; slug: string }[] = [];
 
-    const { error } = await supabaseAdmin.from("articles").insert({
-      slug,
-      title,
-      content,
-      category: "local-guide",
-      target_city: next.city,
-      published_at: new Date().toISOString(),
-    });
+    for (const next of batch) {
+      console.log("[cron/generate] Generating for:", next.city, next.angle);
+      const { title, slug, content } = await generateArticle(next.city, next.prompt);
+      console.log("[cron/generate] Generated:", { title, slug, contentLen: content.length });
 
-    if (error) {
-      throw new Error(`Supabase insert failed: ${error.message}`);
+      const { error } = await supabaseAdmin.from("articles").insert({
+        slug,
+        title,
+        content,
+        category: "local-guide",
+        target_city: next.city,
+        published_at: new Date().toISOString(),
+      });
+
+      if (error) {
+        console.error("[cron/generate] Insert failed for", next.city, ":", error.message);
+        continue; // skip this one, keep going
+      }
+
+      console.log("[cron/generate] Inserted:", title);
+      results.push({ city: next.city, angle: next.angle, title, slug });
     }
 
-    console.log("[cron/generate] Inserted into Supabase successfully");
-
-    return NextResponse.json({
-      success: true,
-      city: next.city,
-      angle: next.angle,
-      title,
-      slug,
-    });
+    return NextResponse.json({ success: true, generated: results.length, results });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[cron/generate] ERROR:", message);
