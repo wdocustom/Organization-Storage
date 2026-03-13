@@ -13,6 +13,35 @@ import {
 
 import { TARGET_CITIES } from "@/lib/cities";
 
+// ---------- Topic rotation per city ----------
+const TOPICS = [
+  {
+    angle: "start-business",
+    prompt: (city: string) =>
+      `Write a highly specific, localized SEO article about starting a custom garage shelving business in ${city}. Make it sound like local advice from someone who actually works in the ${city} market. Reference local housing styles, climate challenges, big box store availability, and what the local competition looks like.`,
+  },
+  {
+    angle: "pricing-strategy",
+    prompt: (city: string) =>
+      `Write about pricing strategy for a garage shelving installer working in ${city}. Cover how to quote jobs, what customers in ${city} expect to pay, how to handle price objections, when to walk away from lowball customers, and how lumber costs in the ${city} area affect your margins. Be specific to ${city} neighborhoods and income levels.`,
+  },
+  {
+    angle: "marketing-leads",
+    prompt: (city: string) =>
+      `Write about how a garage shelving contractor gets customers in ${city}. Cover what actually works — yard signs in ${city} neighborhoods, Nextdoor posts, Facebook Marketplace, word of mouth, leaving cards at local hardware stores. What doesn't work. How to get your first 10 customers in ${city} with zero ad budget. Be hyper-local.`,
+  },
+  {
+    angle: "build-mistakes",
+    prompt: (city: string) =>
+      `Write about the most expensive mistakes new garage shelving installers make in ${city}. Bad lumber math, wrong tote measurements, not accounting for garage floor slopes in ${city} homes, undersizing for the customer's wall, not checking for obstacles. Real job-site horror stories. How each mistake eats your profit margin.`,
+  },
+  {
+    angle: "scaling-up",
+    prompt: (city: string) =>
+      `Write about going from weekend side hustle to full-time garage shelving business in ${city}. When to quit your day job, how many jobs per week you need in the ${city} market, getting a business license in ${city}, insurance, hiring a helper, buying a trailer. The real numbers from someone who did it in a market like ${city}.`,
+  },
+];
+
 // ---------- System prompt ----------
 const brandList = TOTE_BRANDS.map(
   (b) => `${b.retailer}: ${b.name}${b.note ? ` (${b.note})` : ""}`
@@ -63,9 +92,7 @@ function isAuthorized(request: NextRequest): boolean {
 }
 
 // ---------- AI content generation ----------
-async function generateArticle(city: string) {
-  const userPrompt = `Write a highly specific, localized SEO article about starting a custom garage shelving business in ${city}. Make it sound like local advice from someone who actually works in the ${city} market. Reference local housing styles, climate challenges, big box store availability, and what the local competition looks like.`;
-
+async function generateArticle(city: string, topicPrompt: string) {
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -77,7 +104,7 @@ async function generateArticle(city: string) {
       model: "claude-sonnet-4-20250514",
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userPrompt }],
+      messages: [{ role: "user", content: topicPrompt }],
     }),
   });
 
@@ -105,22 +132,33 @@ async function generateArticle(city: string) {
   return { title, slug, content };
 }
 
-// ---------- Pick next city ----------
-async function pickCity(): Promise<string | null> {
-  // Check which cities already have articles
+// ---------- Pick next city + topic ----------
+async function pickCityAndTopic(): Promise<{
+  city: string;
+  angle: string;
+  prompt: string;
+} | null> {
   const { data: existing } = await supabaseAdmin
     .from("articles")
     .select("target_city")
     .eq("category", "local-guide");
 
-  const usedCities = new Set(
-    (existing ?? []).map((row) => row.target_city)
-  );
+  // Count articles per city to determine which topic index to use
+  const countByCity: Record<string, number> = {};
+  for (const row of existing ?? []) {
+    countByCity[row.target_city] = (countByCity[row.target_city] || 0) + 1;
+  }
 
-  const available = TARGET_CITIES.filter((city) => !usedCities.has(city));
-  if (available.length === 0) return null;
+  // Find first city that still has topics left
+  for (const city of TARGET_CITIES) {
+    const count = countByCity[city] || 0;
+    if (count < TOPICS.length) {
+      const topic = TOPICS[count];
+      return { city, angle: topic.angle, prompt: topic.prompt(city) };
+    }
+  }
 
-  return available[0];
+  return null;
 }
 
 // ---------- Route handler ----------
@@ -136,28 +174,25 @@ export async function GET(request: NextRequest) {
   console.log("[cron/generate] Auth OK");
 
   try {
-    // Pick a city that hasn't been covered yet
-    const city = await pickCity();
-    console.log("[cron/generate] Next city:", city ?? "ALL COVERED");
+    const next = await pickCityAndTopic();
+    console.log("[cron/generate] Next:", next?.city ?? "ALL COVERED", next?.angle);
 
-    if (!city) {
+    if (!next) {
       return NextResponse.json({
-        message: "All target cities have been covered.",
+        message: "All target cities and topics have been covered.",
       });
     }
 
-    // Generate the article
-    console.log("[cron/generate] Generating article for:", city);
-    const { title, slug, content } = await generateArticle(city);
+    console.log("[cron/generate] Generating for:", next.city, next.angle);
+    const { title, slug, content } = await generateArticle(next.city, next.prompt);
     console.log("[cron/generate] Generated:", { title, slug, contentLen: content.length });
 
-    // Insert into Supabase
     const { error } = await supabaseAdmin.from("articles").insert({
       slug,
       title,
       content,
       category: "local-guide",
-      target_city: city,
+      target_city: next.city,
       published_at: new Date().toISOString(),
     });
 
@@ -169,7 +204,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      city,
+      city: next.city,
+      angle: next.angle,
       title,
       slug,
     });

@@ -21,6 +21,16 @@ const TOPICS = [
     prompt: (city: string) =>
       `Write a transparent cost breakdown for a homeowner in ${city} considering custom tote storage shelving for their garage. Cover materials cost vs install cost, what's fair, what's a ripoff, and why the 27-gallon tote rack system is the sweet spot. Reference ${city}-specific lumber pricing if relevant and local big box stores.`,
   },
+  {
+    angle: "before-after",
+    prompt: (city: string) =>
+      `Write about what the actual process looks like start to finish when you get custom tote shelving installed in your ${city} garage. The before (piles of bins, can't park your car, holiday stuff everywhere), the install day, and the after. How long it takes, what to expect, what to move out beforehand. Write it like a diary entry from a real ${city} homeowner who just went through it.`,
+  },
+  {
+    angle: "tote-vs-alternatives",
+    prompt: (city: string) =>
+      `Write about why a homeowner in ${city} should choose a custom tote rack system over the alternatives — wire shelving from big box stores, plastic drawer units, pegboard, overhead ceiling racks, or just stacking bins on the floor. Be honest about what each option is good and bad at. But make a clear case for why the 27-gallon tote rack is the best bang for the buck for a ${city} garage.`,
+  },
 ];
 
 // ---------- System prompt ----------
@@ -129,18 +139,20 @@ async function pickCityAndTopic(): Promise<{
 } | null> {
   const { data: existing } = await supabaseAdmin
     .from("articles")
-    .select("target_city, category")
+    .select("target_city")
     .eq("category", "homeowner-guide");
 
-  const usedCities = new Set(
-    (existing ?? []).map((row) => row.target_city)
-  );
+  // Count articles per city to determine which topic index to use
+  const countByCity: Record<string, number> = {};
+  for (const row of existing ?? []) {
+    countByCity[row.target_city] = (countByCity[row.target_city] || 0) + 1;
+  }
 
-  // Cycle through cities, then topics within each city
+  // Find first city that still has topics left
   for (const city of TARGET_CITIES) {
-    // For now: one article per city, first topic
-    if (!usedCities.has(city)) {
-      const topic = TOPICS[0];
+    const count = countByCity[city] || 0;
+    if (count < TOPICS.length) {
+      const topic = TOPICS[count];
       return { city, angle: topic.angle, prompt: topic.prompt(city) };
     }
   }
