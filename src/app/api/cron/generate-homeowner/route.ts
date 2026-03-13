@@ -132,7 +132,7 @@ async function generateArticle(city: string, topicPrompt: string) {
 }
 
 // ---------- How many articles to generate per cron invocation ----------
-const BATCH_SIZE = 3;
+const BATCH_SIZE = 8;
 
 // ---------- Pick next N city+topic pairs ----------
 async function pickBatch(): Promise<
