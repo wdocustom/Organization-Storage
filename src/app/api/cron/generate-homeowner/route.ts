@@ -7,29 +7,54 @@ import { TARGET_CITIES } from "@/lib/cities";
 // ---------- Topic rotation per city ----------
 const TOPICS = [
   {
-    angle: "garage-declutter",
+    angle: "tote-count-guide",
     prompt: (city: string) =>
-      `Write about how a homeowner in ${city} can finally get their garage under control with a tote rack system. Talk about the specific stuff people in ${city} are storing — sports gear, holiday decorations, tools, kids stuff. Be specific to ${city} climate and lifestyle. Why totes on a rack beat plastic bins stacked on the floor or flimsy wire shelving.`,
+      `Write a practical guide for a homeowner in ${city} trying to figure out how many totes they actually need before calling anyone. Walk through the math: average two-car garage, typical ${city} household storage load (seasonal gear, holiday decorations, sports equipment, tools), and how to count what you have vs what a standard 15-tote rack holds. Make it feel like a friend walking them through it, not a sales pitch. Include a rough self-assessment they can do in 10 minutes.`,
   },
   {
-    angle: "hiring-installer",
+    angle: "declutter-first",
     prompt: (city: string) =>
-      `Write about what a homeowner in ${city} should look for when hiring someone to build custom garage shelving. Red flags, fair pricing ($600-800 for a 15-tote unit), questions to ask, why custom wood racks are worth it vs the garbage wire kits from big box stores. Be specific to ${city} — mention local pricing expectations, neighborhoods where this is popular, etc.`,
+      `Write an honest guide for a homeowner in ${city} about what to get rid of before building garage shelving. Not a fluffy "decluttering tips" article — a real, blunt breakdown of the categories of stuff that lives in ${city} garages, what's worth keeping vs what's taking up rack space for no reason, and how to actually make yourself toss the stuff you've been avoiding. The payoff: a tote system that doesn't just organize junk, but actually changes how the garage works.`,
   },
   {
-    angle: "cost-breakdown",
+    angle: "seasonal-rotation",
     prompt: (city: string) =>
-      `Write a transparent cost breakdown for a homeowner in ${city} considering custom tote storage shelving for their garage. Cover materials cost vs install cost, what's fair, what's a ripoff, and why the 27-gallon tote rack system is the sweet spot. Reference ${city}-specific lumber pricing if relevant and local big box stores.`,
+      `Write about how a homeowner in ${city} can set up their tote rack system so seasonal stuff is always reachable without moving everything. Cover the ${city}-specific seasonal calendar — what goes in and out for summer (pool stuff, lawn equipment), fall (holiday decorations, yard tools), winter (coats, boots, snow gear if applicable), and spring (sports gear, bikes). How to label totes, which rows to dedicate to which seasons, and the simple rotation habit that keeps it working year after year.`,
   },
   {
-    angle: "before-after",
+    angle: "diy-measurement-guide",
     prompt: (city: string) =>
-      `Write about what the actual process looks like start to finish when you get custom tote shelving installed in your ${city} garage. The before (piles of bins, can't park your car, holiday stuff everywhere), the install day, and the after. How long it takes, what to expect, what to move out beforehand. Write it like a diary entry from a real ${city} homeowner who just went through it.`,
+      `Write a step-by-step guide for a homeowner in ${city} to accurately measure their garage walls before calling an installer for a quote. Cover which walls work best for shelving in a typical ${city} garage layout (single car vs two-car, attached vs detached), how to account for the garage door track, water heater, and breaker panel, how to measure height from floor to ceiling with a sloped floor, and what numbers to have ready when you make that first call. Make it idiot-proof and specific.`,
   },
   {
-    angle: "tote-vs-alternatives",
+    angle: "install-day-prep",
     prompt: (city: string) =>
-      `Write about why a homeowner in ${city} should choose a custom tote rack system over the alternatives — wire shelving from big box stores, plastic drawer units, pegboard, overhead ceiling racks, or just stacking bins on the floor. Be honest about what each option is good and bad at. But make a clear case for why the 27-gallon tote rack is the best bang for the buck for a ${city} garage.`,
+      `Write about what a homeowner in ${city} needs to do to prepare for their garage shelving install day. What to move out the night before, how to set expectations with the family, what questions to have ready for the installer, and what to do while the work is happening. Cover what a typical install looks like in a ${city} home — how long it takes, whether you need to be home, what the cleanup situation is. Write it like advice from someone who just had it done and wishes they'd known this ahead of time.`,
+  },
+  {
+    angle: "sports-gear-solution",
+    prompt: (city: string) =>
+      `Write about how a homeowner in ${city} can finally get their kids' sports gear, bikes, and outdoor equipment under control with a tote rack system. Be specific to ${city} — what sports are big, what gear takes up the most space, how many seasons of equipment the typical ${city} family is juggling at once. Cover how totes work for gear that doesn't fit neatly (helmets, balls, rolled-up sleeping bags), what goes in totes vs on wall hooks, and why this beats any big box shelving kit for an active family.`,
+  },
+  {
+    angle: "holiday-storage-system",
+    prompt: (city: string) =>
+      `Write about using a custom tote rack system to get holiday decorations under control in a ${city} garage. Cover the specific pain point — the tangled mess of bins that falls every time you open the garage in November — and how a dedicated tote rack section solves it permanently. Include how many totes a typical ${city} household's holiday haul actually fills, how to label and organize by holiday, and the moment of clarity when you realize you can find the tree stand in 30 seconds instead of 30 minutes.`,
+  },
+  {
+    angle: "garage-as-mudroom",
+    prompt: (city: string) =>
+      `Write about how homeowners in ${city} are using part of their garage as a functional mudroom with tote storage. Cover the transition zone concept — a rack section near the garage entry door dedicated to backpacks, sports bags, coats, and shoes — and how totes work better than open cubbies for this use. Reference ${city}-specific realities (rain and mud seasons, schools nearby, commute patterns) and why a garage-as-mudroom setup makes sense when the house doesn't have a proper entryway.`,
+  },
+  {
+    angle: "shelving-regret-stories",
+    prompt: (city: string) =>
+      `Write from the perspective of a homeowner in ${city} who tried the cheap wire shelving from a big box store first — and regrets it. Cover the real frustrations: the sag under bin weight, the stuff that falls through the gaps, the way it looks like a gas station stockroom, the whole thing wobbling when you bump it. Then contrast it with the switch to a custom tote rack. Be honest, a little funny, and don't make it sound like an ad. Just a real person explaining why they wish they'd done it right the first time in their ${city} garage.`,
+  },
+  {
+    angle: "long-term-value",
+    prompt: (city: string) =>
+      `Write about the long-term value of custom garage shelving for a homeowner in ${city}. Not the ROI pitch — the real-life version. How it changes the morning routine when you can find things. How it affects selling the house (${city} real estate buyers notice garages). How the system holds up compared to cheap shelving over 5–10 years. What ${city} homeowners say they wished they'd done sooner. Make it feel like an honest accounting from someone who's had the system for a few years, not a contractor trying to close a sale.`,
   },
 ];
 
