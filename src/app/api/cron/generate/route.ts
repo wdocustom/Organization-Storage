@@ -16,29 +16,54 @@ import { TARGET_CITIES } from "@/lib/cities";
 // ---------- Topic rotation per city ----------
 const TOPICS = [
   {
-    angle: "start-business",
+    angle: "tool-checklist",
     prompt: (city: string) =>
-      `Write a highly specific, localized SEO article about starting a custom garage shelving business in ${city}. Make it sound like local advice from someone who actually works in the ${city} market. Reference local housing styles, climate challenges, big box store availability, and what the local competition looks like.`,
+      `Write a detailed, practical article about the exact tools, materials, and supplies a garage shelving installer needs before their first job in ${city}. Go beyond the obvious — cover the right saw setup for cutting 2x4s on-site, which drill bits actually last, what you need for measuring sloped garage floors in ${city} homes, and the small stuff (knee pads, shop vac, pencil chalk line) that rookies forget. Be hyper-specific. This is a checklist someone can actually take to the hardware store.`,
   },
   {
-    angle: "pricing-strategy",
+    angle: "customer-consultation",
     prompt: (city: string) =>
-      `Write about pricing strategy for a garage shelving installer working in ${city}. Cover how to quote jobs, what customers in ${city} expect to pay, how to handle price objections, when to walk away from lowball customers, and how lumber costs in the ${city} area affect your margins. Be specific to ${city} neighborhoods and income levels.`,
+      `Write about how a garage shelving installer in ${city} should run a proper in-home consultation. Walk through the whole process: what to look for when you first walk in, how to measure the wall correctly, how to read the customer's storage needs from what's piled on the floor, how to quote on the spot, and how to close without sounding pushy. Include how ${city} homeowners typically respond and what objections come up most in this market.`,
   },
   {
-    angle: "marketing-leads",
+    angle: "upsell-add-ons",
     prompt: (city: string) =>
-      `Write about how a garage shelving contractor gets customers in ${city}. Cover what actually works — yard signs in ${city} neighborhoods, Nextdoor posts, Facebook Marketplace, word of mouth, leaving cards at local hardware stores. What doesn't work. How to get your first 10 customers in ${city} with zero ad budget. Be hyper-local.`,
+      `Write about the add-ons and upgrades that double the average job ticket for a garage shelving installer in ${city}. Cover bike hooks and wall-mounted bike storage, overhead ceiling platforms for seasonal gear, integrated workbench builds, slatwall panels for tools, and floor epoxy coordination. How to bring these up naturally without it feeling like a pitch. What ${city} homeowners are most likely to say yes to, and which add-ons have the best margin.`,
   },
   {
-    angle: "build-mistakes",
+    angle: "material-sourcing",
     prompt: (city: string) =>
-      `Write about the most expensive mistakes new garage shelving installers make in ${city}. Bad lumber math, wrong tote measurements, not accounting for garage floor slopes in ${city} homes, undersizing for the customer's wall, not checking for obstacles. Real job-site horror stories. How each mistake eats your profit margin.`,
+      `Write about where to actually buy lumber and materials for garage shelving in ${city} — and how to stop overpaying at big box stores. Cover the local lumber yards, building supply wholesalers, and any ${city}-area options that beat Home Depot or Lowe's on price or quality. Talk about buying in bulk, building supplier accounts, and how to manage material costs when lumber prices move. Be honest about what the markup looks like and how it hits your margins.`,
   },
   {
-    angle: "scaling-up",
+    angle: "seasonal-demand",
     prompt: (city: string) =>
-      `Write about going from weekend side hustle to full-time garage shelving business in ${city}. When to quit your day job, how many jobs per week you need in the ${city} market, getting a business license in ${city}, insurance, hiring a helper, buying a trailer. The real numbers from someone who did it in a market like ${city}.`,
+      `Write about how demand for garage shelving work shifts through the seasons in ${city}. When does the phone ring most — spring cleanouts, pre-holiday panic, post-move-in rush? What's the slow season in ${city} and how do you fill the calendar? Cover how ${city}'s climate affects scheduling (heat in summer, rain in spring, cold garages in winter), and how to use the slow months to build pipeline so you're never slow again.`,
+  },
+  {
+    angle: "referral-machine",
+    prompt: (city: string) =>
+      `Write about how a garage shelving installer builds a referral machine in ${city} with zero paid advertising. Cover what to say at the end of every job to plant the referral seed, how to use before/after photos on Nextdoor in ${city} neighborhoods, the power of leaving a business card in the finished rack, and how to stay top of mind with past customers. Include the math — what one happy customer is worth in ${city} if they refer even two more jobs over a year.`,
+  },
+  {
+    angle: "install-day-breakdown",
+    prompt: (city: string) =>
+      `Write a detailed breakdown of what actually happens on a professional garage shelving install day in ${city}. Cover load-in, the first thing you do when you walk in, how you deal with the customer being home vs out, the exact build sequence, how long each phase takes, what to do when something doesn't line up right, and how you do the final walkthrough. Write it like a training guide for someone doing their second-ever job in a ${city} garage.`,
+  },
+  {
+    angle: "difficult-garages",
+    prompt: (city: string) =>
+      `Write about how to handle the weird, difficult garages that pop up constantly in ${city}. Sloped concrete floors, low ceilings in older ${city} homes, walls that aren't square, water heaters and breaker panels in the way, stucco walls that won't hold a screw, garage door tracks that eat into your wall space. Real solutions — not "measure twice, cut once" platitudes — for the annoying stuff that comes up on jobs in this market.`,
+  },
+  {
+    angle: "job-photography",
+    prompt: (city: string) =>
+      `Write about how a garage shelving installer in ${city} should photograph their work to get jobs on Instagram, Nextdoor, and Facebook Marketplace. Cover the before shot (how to make a chaotic garage look legitimately bad), the after shot (angles, lighting, staging totes for the photo), and how to caption posts for maximum reach in ${city} neighborhoods. Include what NOT to do — blurry phone shots, cluttered backgrounds, posting without asking the homeowner. This is marketing that costs nothing but time.`,
+  },
+  {
+    angle: "customer-trust",
+    prompt: (city: string) =>
+      `Write about how a garage shelving installer builds enough trust in ${city} to charge what they're worth and get paid a deposit before the job. Cover the small signals that tell a customer you're a professional — showing up on time, a clean truck, a written quote, having a business name — and how a simple "we stand behind our work" guarantee actually increases your close rate. What ${city} homeowners are nervous about, and exactly what to say to put them at ease without underselling yourself.`,
   },
 ];
 
